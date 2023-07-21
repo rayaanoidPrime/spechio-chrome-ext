@@ -2,6 +2,9 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Chrome Extension Dev :
+https://developer.chrome.com/docs/extensions/mv3/getstarted/development-basics/
+
 ## Available Scripts
 
 In the project directory, you can run:
