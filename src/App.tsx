@@ -1,37 +1,41 @@
 import './App.css';
-import React, { useRef, useCallback, useState } from 'react';
-import Webcam from 'react-webcam';
+import React, { useRef, useCallback, useState, useReducer } from 'react';
 import axios from 'axios';
-import SkinToneColor from "./components/skin_tone.jsx";
-import ProductRecommendation from './components/product_recommendation.jsx'
-
+import FileDrop from "./components/filedrop.jsx";
+import SkinToneColor from './components/skin_tone';
+import ProductRecommendation from './components/product_recommendation';
 
 function App() {
 
   const webcamRef = useRef<any>(null);
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [imageEncoded, setEncoded] = useState(null);
+
   const [skinType, setSkinType] = useState(null);
   const [skinTone, setSkinTone] = useState(null);
 
-  const captureImage = useCallback(() => {
-    const imageSrc = webcamRef.current.getScreenshot();
-    setCapturedImage(imageSrc);
-    setEncoded(imageSrc.substring(23, imageSrc.length))
-    console.log(imageSrc.substring(23, imageSrc.length))
-  }, []);
-
-  async function goBack(){
-    setSkinTone(null);
-    setSkinType(null);
-  }
+  async function base64EncodeFile(file :any) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = () => {
+        const encodedString = btoa(reader.result as any);
+        resolve(encodedString);
+      };
   
+      reader.onerror = (error) => {
+        reject(error);
+      };
+  
+      reader.readAsBinaryString(file);
+    });
+  }
 
-  async function makePredictPostRequest() {
+  async function makePredictPostRequest(filename : any, filedata : any) {
     try {
+      var encodedFile = await base64EncodeFile(filedata)
+      console.log(encodedFile)
       var bodyFormData = new FormData();
-      bodyFormData.append('filename', 'pic.jpeg');
-      bodyFormData.append('filedata' , imageEncoded as any );
+      bodyFormData.append('filename', filename);
+      bodyFormData.append('filedata' , encodedFile as any);
       console.log(bodyFormData);
       const response = await axios.post('http://localhost:8000/skin',bodyFormData,{
         headers: {
@@ -45,6 +49,33 @@ function App() {
       console.error(error);
     }
   }
+  
+  async function goBack(){
+    setSkinTone(null);
+    setSkinType(null);
+  }
+
+  const reducer = (state : any , action  : any) => {
+    switch (action.type) {
+        case "SET_IN_DROP_ZONE" : 
+            return {...state , inDropZone : action.inDropZone}
+        case "ADD_FILE_TO_LIST" :
+            return {...state, fileList : state.fileList.concat(action.files)}
+        default : 
+            return state;
+    }
+}
+
+  const [data , dispatch] = useReducer(reducer , {
+      inDropZone : false,
+      fileList : []
+  });
+
+  const handleSubmit = () => {
+    console.log(data.fileList[0]);
+    makePredictPostRequest(data.fileList[0]["name"], data.fileList[0]);
+  }
+  
 
   return (
     <div className="App">
@@ -54,21 +85,17 @@ function App() {
       <div className='description'>
         Facial Feature extracter and Beauty Product recommendation engine
       </div>
-      {skinTone && skinType ? <></> : <div className='webcam-container'>
-            <div className='webcam-col'>
-              <Webcam  audio={false} ref={webcamRef} screenshotFormat="image/jpeg" className='webcam-preview'/>
-              <button className='rounded-2xl bg-gradient-to-r from-pent to-quad p-2 px-4 border-2 hover:opacity-80 mt-10 shadow-xl' onClick={captureImage}>Capture</button>
-            </div>
-            <div className='webcam-col'>
-              {capturedImage && <img className='webcam-preview' src={capturedImage} alt="Captured" />}
-              {capturedImage ? <button className='rounded-2xl bg-gradient-to-r from-pent to-quad p-2 px-4 border-2 hover:opacity-80 mt-10 shadow-xl' onClick={makePredictPostRequest}>Use</button> : <></>}
-            </div>
-        </div>}
-        <div className='text-purple-900 text-lg font-bold mt-2 center above'>
-          {skinType && skinTone ? <div>
-              <div className=' border-1 shadow-xl border-gray-400 bg-gray-100 bg-opacity-40 flex flex-col rounded-lg p-4 mb-5'>
-              <h2 className='text-xl font-bold mb-4 text-quad self-start'>Your Skin </h2>
-              <div className='flex gap-28'>
+      { skinTone && skinType ? <></> : <FileDrop data={data} dispatch={dispatch} />}
+        {data.fileList && data.fileList.length>0 && !skinTone && ! skinType ?
+          <button onClick={handleSubmit} type='submit' className='rounded-2xl bg-gradient-to-r from-pent to-quad p-2 px-4 border-2 hover:opacity-80 mt-10 shadow-xl'>Submit</button> 
+          : <></> 
+      }
+
+        <div className='text-purple-900 bg-gray-400 font-bold mt-2 center above z-10'>
+              {skinType && skinTone ? <div className='z-10'>
+                <div className=' border-1 border-gray-400 bg-opacity-40 flex flex-col rounded-lg p-4 mb-5'>
+              <h2 className='text-md font-bold mb-4 text-quad self-start'>Your Skin </h2>
+                <div className='flex flex-col'>
                   <p className=''>
                     Skin Type : {skinType} 
                   </p>
@@ -78,16 +105,15 @@ function App() {
                   <p>
                     Sensitivity : {skinType == "Dry" ? "Low" : "High"}
                   </p>
-              </div>
+                </div>
               <p>
-                  Recommended : {skinType == "Dry" ? "Hydrating products with hyaluronic acid, glycerin, and ceramides" : "Oil absorbing products with retinol, glycolic acid"}
+                  Recommended : {skinType == "Dry" ? "Hydrating products with hyaluronic acid, glycerin, and ceramides" : "High"}
               </p>
               <SkinToneColor skinTone={skinTone} />
               </div>
-              <ProductRecommendation skinType={skinType} skinTone={skinTone} />
-              <button onClick={goBack} type='submit' className='rounded-2xl bg-gradient-to-r from-pent to-quad p-2 px-4 border-2 hover:opacity-80 mt-10 shadow-xl'>Go Back</button>
+              <button onClick={goBack} type='submit' className='rounded-2xl bg-gradient-to-r from-pent to-quad p-2 px-4 border-2 hover:opacity-80 shadow-xl'>Go Back</button>
               </div> : <></>}
-        </div>
+      </div>
     </div>
   );
 }

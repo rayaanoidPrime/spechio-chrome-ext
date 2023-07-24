@@ -27,7 +27,7 @@ const SkinToneColor = ({ skinTone }) => {
       <div className='text-purple-900 text-lg font-bold mt-6'>
         Skin Tone:
       </div>
-      <div style={{backgroundColor:color}} className={`w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-2xl uppercase mt-2 border-2 border-gray-200 shadow-xl`}>
+      <div style={{backgroundColor:color}} className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-lg uppercase mt-2 border-2 border-gray-200 shadow-xl`}>
         {skinTone}
       </div>
     </div>
