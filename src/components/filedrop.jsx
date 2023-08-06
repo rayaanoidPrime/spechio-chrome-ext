@@ -91,7 +91,7 @@ const FileDrop   = ({data , dispatch}) => {
                 >
                 <div className="text-center ">
                     <FilePreview fileData={data} />
-                    <label htmlFor="fileSelect" className="text-center border-1 bg-indigo-900 opacity-80 hover:opacity-100 px-3 rounded-xl hover:bg-indigo-600 text-white py-05 hover:cursor-pointer">You can select multiple Files</label>
+                    <label htmlFor="fileSelect" className="text-center border-1 bg-indigo-900 opacity-80 hover:opacity-100 px-3 rounded-xl hover:bg-indigo-600 text-white py-05 hover:cursor-pointer mb-auto">Select File</label>
                     <input id="fileSelect" onChange={(e) => handleFileSelect(e)} type="file" multiple className=" absolute top-[-9999px] " />
                     <p className="mt-1 text-sm text-gray-600">Drag and drop your files here</p>  
                 </div>

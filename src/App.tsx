@@ -86,7 +86,7 @@ function App() {
         Facial Feature extracter and Beauty Product recommendation engine
       </div>
       { skinTone && skinType ? <></> : <FileDrop data={data} dispatch={dispatch} />}
-        {data.fileList && data.fileList.length>0 && !skinTone && ! skinType ?
+      {data.fileList && data.fileList.length>0 && !skinTone && ! skinType ?
           <button onClick={handleSubmit} type='submit' className='rounded-2xl bg-gradient-to-r from-pent to-quad p-2 px-4 border-2 hover:opacity-80 mt-10 shadow-xl'>Submit</button> 
           : <></> 
       }
@@ -107,7 +107,7 @@ function App() {
                   </p>
                 </div>
               <p>
-                  Recommended : {skinType == "Dry" ? "Hydrating products with hyaluronic acid, glycerin, and ceramides" : "High"}
+                  Recommended : {skinType == "Dry" ? "Hydrating products with hyaluronic acid, glycerin, and ceramides" : "Oil absorbing products with retinol, glycolic acid"}
               </p>
               <SkinToneColor skinTone={skinTone} />
               </div>

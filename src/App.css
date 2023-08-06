@@ -401,5 +401,7 @@
 }
 
 
-
+::file-selector-button {
+  display: none;
+}
 
